@@ -7,16 +7,26 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            background: #f4f4f4;
+            overflow: hidden;
+        }
+        .background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* Keep video in the background */
         }
         .container {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.8); /* Slight transparency */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -49,9 +59,14 @@
     </style>
 </head>
 <body>
+    <video class="background-video" autoplay loop muted>
+        <source src="cube.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
     <div class="container">
         <h2>Rubik's Cube Project</h2>
-        
+
         <div class="option">
             <label for="material">Frame Material:</label>
             <select id="material" onchange="calculateTotal()">
@@ -60,7 +75,7 @@
                 <option value="40">Plastic ($40)</option>
             </select>
         </div>
-        
+
         <div class="option">
             <label for="cubeSize">Rubik's Cube Size:</label>
             <select id="cubeSize" onchange="calculateTotal()">
@@ -68,12 +83,12 @@
                 <option value="20">5cm ($20 each)</option>
             </select>
         </div>
-        
+
         <div class="option">
             <label for="quantity">Number of Cubes:</label>
             <input type="number" id="quantity" value="100" min="1" onchange="calculateTotal()">
         </div>
-        
+
         <p class="total">Total Cost: $<span id="totalCost">0</span></p>
     </div>
 
@@ -82,11 +97,11 @@
             let materialCost = parseInt(document.getElementById("material").value);
             let cubeCost = parseInt(document.getElementById("cubeSize").value);
             let quantity = parseInt(document.getElementById("quantity").value);
-            
+
             let total = materialCost + (cubeCost * quantity);
             document.getElementById("totalCost").textContent = total;
         }
-        
+
         calculateTotal(); // Initial calculation
     </script>
 </body>
