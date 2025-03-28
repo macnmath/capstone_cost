@@ -182,9 +182,9 @@
         <div class="option">
             <label for="rotator">Rotator Type:</label>
             <select id="rotator" onchange="calculateTotal()">
-                <option value="0">No Rotation ($0)</option>
-                <option value="750">China Rotator ($750)</option>
-                <option value="2000">USA Rotator ($2000)</option>
+                <option value="0">No Rotation ($0) (boring)</option>
+                <option value="750">China Rotator ($750) (could be cool)</option>
+                <option value="2200">USA Rotator ($2200) (super cool)</option>
             </select>
         </div>
         
@@ -202,12 +202,13 @@
             </div>
         </div>
 
-        <p id="total">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8202; Total Cost: $<span id="totalCost">0</span></p>
-        <p id="alreadypaid"><u>&nbsp;&nbsp;&#8211;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Already Paid: $<span id="paidAmountDisplay">229.43</span>&nbsp;&nbsp;&nbsp;</u></p>
+        <p id="total">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8202; Estimated Total Cost: $<span id="totalCost">0</span></p>
+        <p id="alreadypaid"><u>&nbsp;&nbsp;&#8211;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Already Paid: $<span id="paidAmountDisplay">229.43</span>&nbsp;&nbsp;&nbsp;</u></p>
         <p id="remainingBalance" style="color: red; font-weight: bold;"></p>
+        <p id="message"> <i>Calvert Hall can purchase most materials for me when I request them, I will need $2560.13 paid to me for cubes, labor, and 3D printing costs.</i> </p>
 
 
-        <button class="button" onclick="toggleBaseCosts()">View Base Costs</button>
+        <button id="viewBaseCostsButton" class="button" onclick="toggleBaseCosts()">View Base Costs</button>
 
         <div id="baseCostDetails">
             <p><strong>Base Costs Breakdown:</strong>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <i> <span id="baseCostTotal">(Total: $0)</span> <i></p>
@@ -271,12 +272,12 @@
             let remainingBalance = total - paidAmount;
 
             document.getElementById("totalCost").textContent = total;
-            document.getElementById("remainingBalance").innerText = `Remaining Balance: $${remainingBalance.toFixed(2)}${rentalText}`;
+            document.getElementById("remainingBalance").innerText = `Remaining Balance Estimate: $${remainingBalance.toFixed(2)}${rentalText}`;
 
             // Update rotator link
             if (rotatorSelect.value == "750") {
                 rotatorInfo.innerHTML = `<button class="button" onclick="showRotatorInfo('china')">View Chinese Rotator Info</button>`;
-            } else if (rotatorSelect.value == "2000") {
+            } else if (rotatorSelect.value == "2200") {
                 rotatorInfo.innerHTML = `<button class="button" onclick="showRotatorInfo('usa')">View American Rotator Info</button>`;
             } else {
                 rotatorInfo.innerHTML = ""; // Hide if no rotator selected
@@ -337,7 +338,7 @@
             Array.from(rotatorSelect.options).forEach(option => {
                 // Check the option's text and update the price accordingly
                 if (option.text.includes("USA Rotator")) {
-                    option.text = "USA Rotator ($2000)";
+                    option.text = "USA Rotator ($2200)";
                 } else if (option.text.includes("China Rotator")) {
                     option.text = "China Rotator ($750)";
                 } else if (option.text.includes("No Rotation")) {
@@ -348,13 +349,16 @@
 
 
         let previousRotatorType = null;
+        let previousBaseCostToggle = null;
 
         function handleRentChange() {
 
             let purchaseType = document.getElementById("purchaseType").value; // Get the selected purchase type
-            let baseCostButton = document.querySelector("button"); // Get the "View Base Costs" button
+            let baseCostButton = document.getElementById("viewBaseCostsButton");
             let rotatorSelect = document.getElementById("rotator"); // Get the "Rotator type" dropdown
             let rentalDurationContainer = document.getElementById("rentalDurationContainer");
+            let baseCostDetails = document.getElementById("baseCostDetails"); // Get the base cost table
+            let message = document.getElementById("message"); // Get the message paragraph
 
             // If switching to Rent, save the current "Rotator type"
             if (purchaseType === "rent") {
@@ -362,21 +366,29 @@
                     previousRotatorType = rotatorSelect.value;
                 }
                 hidePrices()
-                rotatorSelect.value = "2000"
+                rotatorSelect.value = "2200"
 
                 // Disable all options except USA Rotator
                 Array.from(rotatorSelect.options).forEach(option => {
-                    if (option.value !== "2000") {
+                    if (option.value !== "2200") {
                         option.disabled = true;
                     } else {
                         option.disabled = false;
                     }
                 });
 
-                //rotatorSelect.disabled = true;
+                previousBaseCostToggle = baseCostDetails.style.display
+
                 rentalDurationContainer.style.display = "block";
                 baseCostButton.classList.add("disabled"); // Disable the "View Base Costs" button
                 baseCostButton.disabled = true; // Make the "View Base Costs" button unclickable
+                baseCostDetails.style.display = "none"; // Hide the base cost table when renting
+            
+                // Hide the message when Rent is selected
+                if (message) {
+                    message.style.display = "none";
+                }
+           
             } else {
                 // If switching back to Buy, restore the "Rotator type" to its previous value
                 if (previousRotatorType !== null) {
@@ -394,6 +406,12 @@
                 rentalDurationContainer.style.display = "none";
                 baseCostButton.classList.remove("disabled"); // Enable the "View Base Costs" button
                 baseCostButton.disabled = false; // Make the "View Base Costs" button clickable again
+                baseCostDetails.style.display = previousBaseCostToggle;
+            
+                // Show the message when Buy is selected
+                if (message) {
+                    message.style.display = "block";
+                }
             }
 
             calculateTotal(); // Recalculate the total cost whenever the state changes
@@ -426,9 +444,9 @@
                     <p><strong>Arrival Time:</strong> Unknown</p>
                     <p><strong>Speed:</strong> Adjustable</p>
                     <p><strong>Maximum Load:</strong> A lot</p>
-                    <p><strong>Lifespan:</strong> Decades</p>
+                    <p><strong>Lifespan:</strong> Decades (for the durable one)</p>
                     <p><strong>Actual Price:</strong> $1300 for the cheap one, $2121 for the durable one (excluding shipping)</p>
-                    <p><strong>Additional Info:</strong> We should schedule a call with their engineer for a free consultation.</p>
+                    <p><strong>Additional Info:</strong> We should schedule a call with their engineer ASAP for a free consultation.</p>
                 `;
             }
 
