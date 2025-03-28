@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Project Options</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f4f4f4;
+            overflow: hidden;
+        }
+        .background-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .option {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        .total {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #333;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1em;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+
+        .disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        #baseCostDetails {
+            display: none;
+            margin-top: 10px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            max-width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: fixed; /* Prevent long text from breaking the layout */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+            font-size: 0.8em; /* Smaller font size */
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #baseCostTableContainer {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            overflow: auto; /* Enable scroll if needed */
+        }
+
+        /* Modal Content (the actual box) */
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        /* Close Button (X) */
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Hover effect for Close Button */
+        .close:hover,
+        .close:focus {
+            color: red;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <video class="background-video" autoplay loop muted>
+        <source src="Cube2 v3.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="container">
+        <h2>Rubik's Cube Capstone Proposal</h2>
+
+        <div class="option">
+            <label for="purchaseType">Purchase or Rent:</label>
+            <select id="purchaseType" onchange="handleRentChange()">
+                <option value="buy">Buy</option>
+                <option value="rent">Rent</option>
+            </select>
+        </div>
+        
+        <div class="option">
+            <label for="rotator">Rotator Type:</label>
+            <select id="rotator" onchange="calculateTotal()">
+                <option value="0">No Rotation ($0)</option>
+                <option value="750">China Rotator ($750)</option>
+                <option value="2000">USA Rotator ($2000)</option>
+            </select>
+        </div>
+        
+        <div class="option" id="rentalDurationContainer" style="display: none;">
+            <label for="rentalDuration">Rental Duration (years):</label>
+            <input type="number" id="rentalDuration" value="1" min="1" max="20" onchange="validateRentalDuration(); calculateTotal()">
+        </div>
+
+        <div id="rotatorInfo"></div>
+        <!-- Modal (hidden by default) -->
+        <div id="rotatorModal" class="modal">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <div id="rotatorDetails"></div>
+            </div>
+        </div>
+
+        <p id="total">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#8202; Total Cost: $<span id="totalCost">0</span></p>
+        <p id="alreadypaid"><u>&nbsp;&nbsp;&#8211;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Already Paid: $<span id="paidAmountDisplay">229.43</span>&nbsp;&nbsp;&nbsp;</u></p>
+        <p id="remainingBalance" style="color: red; font-weight: bold;"></p>
+
+
+        <button class="button" onclick="toggleBaseCosts()">View Base Costs</button>
+
+        <div id="baseCostDetails">
+            <p><strong>Base Costs Breakdown:</strong>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  <i> <span id="baseCostTotal">(Total: $0)</span> <i></p>
+            <div id="baseCostTableContainer">
+                <table>
+                    <tr>
+                        <th>Item</th>
+                        <th>Shop</th>
+                        <th>Amount</th>
+                        <th>Cost/Item</th>
+                        <th>Subtotal</th>
+                    </tr>
+                    <tbody id="baseCostTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+    <script>
+        // Base Cost Items Data (Updated)
+        const baseCostItems = [
+            { title: "Core Threaded Pipes", producer: "Pipe Décor", link: "https://shopify.com/34543632443/account/orders/7ad80e52d3a7c1f96c039f0a13e070c7", amount: 1, costPerItem: 174.33 },
+            { title: "Carbon Fiber PETG Filament", producer: "Amazon", link: "https://a.co/d/8tbUYTA", amount: 2, costPerItem: 25.99 },
+            { title: "Mini Rubik's Cubes", producer: "Alibaba", link: "https://www.alibaba.com/product-detail/Factory-Price-3x3-Mini-Magic-Puzzle_1600759014342.html?spm=a2700.galleryofferlist.normal_offer.d_title.736b13a0xGlsVq&selectedCarrierCode=SEMI_MANAGED_STANDARD@@STANDARD", amount: 5150, costPerItem: 0.25 },
+            { title: "Plywood", producer: "Home Depot", link: "https://www.homedepot.com/p/SANDEPLY-12mm-Sande-Plywood-1-2-in-Category-x-4-ft-x-8-ft-Actual-0-472-in-x-48-in-x-96-in-454532/203414055", amount: 3, costPerItem: 45.55 },
+            { title: "Angle Brackets", producer: "McMaster Carr", link: "https://www.mcmaster.com/1556A46/", amount: 50, costPerItem: 4.90 },
+            { title: "Metal Disc", producer: "McMaster Carr", link: "https://www.mcmaster.com/1610T76-1610T163/", amount: 1, costPerItem: 117.67 },
+            { title: "Bolts 1/4-20", producer: "McMaster Carr", link: "https://www.mcmaster.com/90272A541/", amount: 1, costPerItem: 20.92 },
+            { title: "Bolts #10", producer: "McMaster Carr", link: "https://www.mcmaster.com/90272A247/", amount: 2, costPerItem: 8.03 },
+            { title: "High-Strength Steel Nylon-Insert Locknut", producer: "McMaster Carr", link: "https://www.mcmaster.com/97135A210/", amount: 2, costPerItem: 5.20 },
+            { title: "Low-Strength Steel Nylon-Insert Locknut", producer: "McMaster Carr", link: "https://www.mcmaster.com/90631A011/", amount: 2, costPerItem: 4.80 },
+            { title: "Flange", producer: "McMaster Carr", link: "https://www.mcmaster.com/43505K353/", amount: 1, costPerItem: 48.65 },
+            { title: "Printing Cost", producer: "Ben Rozanski", link: "N/A", amount: 1, costPerItem: 22.63 },
+            { title: "Polyurethane Estimate", producer: "Home Depot", link: "https://www.homedepot.com/p/Varathane-11-25-oz-Clear-Gloss-Water-Based-Interior-Polyurethane-Spray-Paint-200081/100144747", amount: 6, costPerItem: 13.98 },
+            { title: "Gorilla Glue", producer: "Amazon", link: "https://a.co/d/im5d26O", amount: 5, costPerItem: 12.99 },
+            { title: "Estimated Shipping, Taxes, Minor Expenses", producer: "N/A", link: "N/A", amount: 1, costPerItem: 97.12 },
+            { title: "Unexpected Costs", producer: "N/A", link: "N/A", amount: 1, costPerItem: 500.00 },
+            { title: "Labor", producer: "N/A", link: "N/A", amount: 250, costPerItem: 5.00 }
+        ];
+        
+        const paidAmount = 229.43; // Amount already paid by the school
+
+        function calculateTotal() {
+            let purchaseType = document.getElementById("purchaseType").value;
+            let rotatorSelect = document.getElementById("rotator");
+            let rotatorCost = parseInt(rotatorSelect.value);
+            let rotatorInfo = document.getElementById("rotatorInfo");
+
+            // Compute base cost total
+            let baseCostTotal = baseCostItems.reduce((sum, item) => sum + (item.amount * item.costPerItem), 0);
+            document.getElementById("baseCostTotal").textContent = `(Total: $${baseCostTotal})`;
+
+            if (purchaseType === "rent") {
+                let years = parseInt(document.getElementById("rentalDuration").value);
+                total = 1500 + (Math.max(0, years - 1) * 1000); // $1500 first year, $1000 each additional year
+                rentalText = ` (paid over ${years} year${years > 1 ? "s" : ""})`; // Add rental duration text
+            } else {
+                total = baseCostTotal + rotatorCost;
+                rentalText = "";
+            }
+
+            let remainingBalance = total - paidAmount;
+
+            document.getElementById("totalCost").textContent = total;
+            document.getElementById("remainingBalance").innerText = `Remaining Balance: $${remainingBalance.toFixed(2)}${rentalText}`;
+
+            // Update rotator link
+            if (rotatorSelect.value == "750") {
+                rotatorInfo.innerHTML = `<button class="button" onclick="showRotatorInfo('china')">View Chinese Rotator Info</button>`;
+            } else if (rotatorSelect.value == "2000") {
+                rotatorInfo.innerHTML = `<button class="button" onclick="showRotatorInfo('usa')">View American Rotator Info</button>`;
+            } else {
+                rotatorInfo.innerHTML = ""; // Hide if no rotator selected
+            }
+
+            // showRotatorInfo(rotatorSelect.value)
+        }
+
+        function toggleBaseCosts() {
+            let details = document.getElementById("baseCostDetails");
+            details.style.display = (details.style.display === "none" || details.style.display === "") ? "block" : "none";
+
+            let tableBody = document.getElementById("baseCostTable");
+            tableBody.innerHTML = ""; // Clear previous content
+
+            baseCostItems.forEach(item => {
+                let row = document.createElement("tr");
+                let shopCellContent = item.link && item.link !== "N/A"
+                    ? `<a href="${item.link}" target="_blank">${item.producer}</a>` 
+                    : item.producer; // Show plain text if no link
+
+                row.innerHTML = `
+                    <td>${item.title}</td>
+                    <td>${shopCellContent}</td>
+                    <td>${item.amount}</td>
+                    <td>$${item.costPerItem.toFixed(2)}</td>
+                    <td>$${(item.amount * item.costPerItem).toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function validateRentalDuration() {
+            let input = document.getElementById("rentalDuration");
+            let value = parseInt(input.value);
+
+            if (isNaN(value) || value < 1) {
+                input.value = 1; // Reset to 1 if too low or invalid
+            } else if (value > 20) {
+                input.value = 20; // Reset to 20 if too high
+            }
+        }
+
+
+        // Function to hide price for all options
+        function hidePrices() {
+            let rotatorSelect = document.getElementById("rotator");
+            Array.from(rotatorSelect.options).forEach(option => {
+                let optionText = option.text.split('(')[0]; // Remove price from the text
+                option.text = optionText.trim(); // Update text without price
+            });
+        }
+
+        // Function to restore price for all options
+        function restorePrices() {
+            let rotatorSelect = document.getElementById("rotator");
+    
+            Array.from(rotatorSelect.options).forEach(option => {
+                // Check the option's text and update the price accordingly
+                if (option.text.includes("USA Rotator")) {
+                    option.text = "USA Rotator ($2000)";
+                } else if (option.text.includes("China Rotator")) {
+                    option.text = "China Rotator ($750)";
+                } else if (option.text.includes("No Rotation")) {
+                    option.text = "No Rotation ($0)";
+                }
+            });
+        }
+
+
+        let previousRotatorType = null;
+
+        function handleRentChange() {
+
+            let purchaseType = document.getElementById("purchaseType").value; // Get the selected purchase type
+            let baseCostButton = document.querySelector("button"); // Get the "View Base Costs" button
+            let rotatorSelect = document.getElementById("rotator"); // Get the "Rotator type" dropdown
+            let rentalDurationContainer = document.getElementById("rentalDurationContainer");
+
+            // If switching to Rent, save the current "Rotator type"
+            if (purchaseType === "rent") {
+                if (previousRotatorType === null) {
+                    previousRotatorType = rotatorSelect.value;
+                }
+                hidePrices()
+                rotatorSelect.value = "2000"
+
+                // Disable all options except USA Rotator
+                Array.from(rotatorSelect.options).forEach(option => {
+                    if (option.value !== "2000") {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+
+                //rotatorSelect.disabled = true;
+                rentalDurationContainer.style.display = "block";
+                baseCostButton.classList.add("disabled"); // Disable the "View Base Costs" button
+                baseCostButton.disabled = true; // Make the "View Base Costs" button unclickable
+            } else {
+                // If switching back to Buy, restore the "Rotator type" to its previous value
+                if (previousRotatorType !== null) {
+                    rotatorSelect.value = previousRotatorType; // Restore the saved "Rotator type" value
+                    previousRotatorType = null;
+                }
+                restorePrices()
+                //rotatorSelect.disabled = false; // Allow selection
+
+                 // Restore normal behavior for purchase
+                Array.from(rotatorSelect.options).forEach(option => {
+                    option.disabled = false; // Enable all options
+                });
+
+                rentalDurationContainer.style.display = "none";
+                baseCostButton.classList.remove("disabled"); // Enable the "View Base Costs" button
+                baseCostButton.disabled = false; // Make the "View Base Costs" button clickable again
+            }
+
+            calculateTotal(); // Recalculate the total cost whenever the state changes
+        }
+
+        function showRotatorInfo(type) {
+            let infoContent = "";
+            const modal = document.getElementById("rotatorModal");
+            const rotatorDetails = document.getElementById("rotatorDetails");
+
+            // Populate the content based on the type
+            if (type === "china") {
+                infoContent = `
+                    <h3>Chinese Rotator</h3>
+                    <p><a href="https://www.alibaba.com/product-detail/Turntable-BKL-Electric-Turntable-360-Degrees_1601018414158.html" target="_blank">View Product on Alibaba</a></p>
+                    <p><strong>Arrival Time:</strong> By May (Hopefully)</p>
+                    <p><strong>Speed:</strong> Adjustable (0.5-2.0 rpm)</p>
+                    <p><strong>Maximum Load:</strong> 330lbs-550lbs</p>
+                    <p><strong>Lifespan:</strong> Unknown</p>       
+                    <p><strong>Actual Price:</strong> $545.69+</p>
+                    <p><strong>Additional Info:</strong> I would also need to buy a larger metal disc. </p>
+                `;
+            } else if (type === "usa") {
+                infoContent = `
+                    <h3>American Rotator</h3>
+                    <p><i>Expensive one cad:<i><p>
+                    <img src="image003.png" alt="American Rotator" style="max-width: 100%; height: auto; margin-bottom: 10px;">
+                    <p><i>Cheap one info:<i><p>
+                    <a href="HM-800-Less-Rotating-Wires.pdf" target="_blank">View HM-800 Less Rotating Wires PDF</a>
+                    <p><strong>Arrival Time:</strong> Unknown</p>
+                    <p><strong>Speed:</strong> Adjustable</p>
+                    <p><strong>Maximum Load:</strong> A lot</p>
+                    <p><strong>Lifespan:</strong> Decades</p>
+                    <p><strong>Actual Price:</strong> $1300 for the cheap one, $2121 for the durable one (excluding shipping)</p>
+                    <p><strong>Additional Info:</strong> We should schedule a call with their engineer for a free consultation.</p>
+                `;
+            }
+
+            // Update the modal content and show it
+            rotatorDetails.innerHTML = infoContent;
+            modal.style.display = "block";
+        }
+
+        // Get the modal and the close button
+        const modal = document.getElementById("rotatorModal");
+        const closeModal = document.getElementById("closeModal");
+
+        // Close the modal when the user clicks on <span> (X)
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Close the modal if the user clicks outside the modal
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+
+
+        window.onload = function() {
+            calculateTotal();
+        }
+    </script>
+</body>
+</html>
